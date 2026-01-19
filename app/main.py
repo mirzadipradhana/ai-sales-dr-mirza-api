@@ -71,4 +71,4 @@ async def health_check():
 
 
 # For Vercel deployment
-handler = app
+app = app

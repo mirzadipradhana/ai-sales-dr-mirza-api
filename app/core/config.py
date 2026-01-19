@@ -28,9 +28,6 @@ class Settings(BaseSettings):
     DEFAULT_PAGE_SIZE: int = 20
     MAX_PAGE_SIZE: int = 100
     
-    # Mock Enrichment API (for demo)
-    ENRICHMENT_API_KEY: str = "mock-api-key"
-    
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,

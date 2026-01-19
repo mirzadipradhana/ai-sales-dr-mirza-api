@@ -134,9 +134,6 @@ API_V1_PREFIX=/api/v1
 # Pagination
 DEFAULT_PAGE_SIZE=20
 MAX_PAGE_SIZE=100
-
-# Enrichment API
-ENRICHMENT_API_KEY=your-api-key-here
 ```
 
 All settings have sensible defaults defined in `core/config.py`.

@@ -1,3 +1,6 @@
+[tool.setuptools]
+packages = ["api", "core", "models", "repositories", "services", "utils"]
+
 [project]
 name = "ai-sales-dr-api"
 version = "1.0.0"
@@ -11,6 +14,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "faker>=22.0.0",
     "python-multipart>=0.0.6",
+    "email-validator>=2.3.0",
 ]
 readme = "README.md"
 license = { text = "MIT" }

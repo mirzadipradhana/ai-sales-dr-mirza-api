@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1.routes import leads
 
 from app.core.config import get_settings
 
@@ -10,8 +11,6 @@ settings = get_settings()
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.VERSION,
-    docs_url="/docs",
-    redoc_url="/redoc",
 )
 
 # CORS middleware
@@ -31,9 +30,10 @@ async def root():
     return {
         "name": settings.APP_NAME,
         "version": settings.VERSION,
-        "docs": "/docs",
-        "health": "/health",
     }
+
+
+app.include_router(leads.router, prefix=settings.API_V1_PREFIX)
 
 
 # Health check endpoint

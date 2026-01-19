@@ -244,6 +244,49 @@ app/
 └── README.md               # This file
 ```
 
+## Key Design Patterns & Best Practices
+
+This API follows several design patterns and best practices to ensure maintainability, testability, and scalability:
+
+### Repository Pattern
+- Abstracts data access layer, making it easy to swap in-memory storage with a database later (e.g., PostgreSQL)
+- Provides a clean interface for data operations independent of the underlying storage mechanism
+
+### Service Layer
+- Business logic is separated from API routes
+- Routes handle HTTP concerns, services handle business rules
+- Promotes code reusability and easier testing
+
+### Dependency Injection
+- Components are loosely coupled and easily testable
+- Dependencies are injected through FastAPI's dependency system
+- Enables easy mocking and swapping of implementations
+
+### Domain Models
+- Separate domain entities from DTOs (Pydantic schemas)
+- Domain models represent business entities, schemas handle API contracts
+- Clear separation between internal representation and external API
+
+### Cursor-based Pagination
+- Scalable pagination for large datasets
+- More efficient than offset-based pagination for large result sets
+- Better performance with consistent ordering
+
+### Strategy Pattern
+- Enrichment service can be swapped with real providers
+- Allows for different implementations of the same interface
+- Easy to extend with new providers without changing existing code
+
+### Exception Handling
+- Custom exceptions with proper HTTP status codes
+- Centralized error handling for consistent API responses
+- Clear error messages for better developer experience
+
+### Type Safety
+- Full type hints throughout the codebase
+- Better IDE support with autocomplete and error detection
+- Catches errors at development time rather than runtime
+
 ## Configuration
 
 The application uses environment variables for configuration. Create a `.env` file in the `app/` directory:

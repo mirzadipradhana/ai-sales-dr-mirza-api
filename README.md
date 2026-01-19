@@ -69,21 +69,20 @@ uv run --project app uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 The API will be available at:
 
-- **API**: http://127.0.0.1:8000
+- **Development API**: http://127.0.0.1:8000
+- **Staging API (Vercel)**: https://ai-sales-dr-mirza-api.vercel.app/
 
 ## API Endpoints
 
 ### Root Endpoint
 
 - **GET** `/`
-  - Returns API information including name, version, and available endpoints
+  - Returns API information including name and version
   - **Response**:
     ```json
     {
       "name": "Lead Management API",
-      "version": "1.0.0",
-      "docs": "/docs",
-      "health": "/health"
+      "version": "1.0.0"
     }
     ```
 
@@ -97,6 +96,137 @@ The API will be available at:
       "status": "healthy",
       "version": "1.0.0",
       "environment": "development"
+    }
+    ```
+
+### Leads Endpoints
+
+All lead endpoints are prefixed with `/api/v1/leads`.
+
+#### Create Lead
+
+- **POST** `/api/v1/leads`
+  - Creates a new lead in the system
+  - **Request Body**:
+    ```json
+    {
+      "name": "John Doe",
+      "job_title": "CEO",
+      "company": "Acme Corp",
+      "email": "john.doe@acme.com",
+      "industry": "Technology",
+      "phone_number": "+1-555-0123",
+      "headcount": 100
+    }
+    ```
+  - **Response** (201 Created):
+    ```json
+    {
+      "id": "lead_123",
+      "name": "John Doe",
+      "job_title": "CEO",
+      "company": "Acme Corp",
+      "email": "john.doe@acme.com",
+      "industry": "Technology",
+      "phone_number": "+1-555-0123",
+      "headcount": 100,
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+    ```
+  - **Required Fields**: `name`, `job_title`, `company`, `email`, `industry`
+  - **Optional Fields**: `phone_number`, `headcount` (must be between 1 and 1,000,000)
+
+#### Bulk Create Leads
+
+- **POST** `/api/v1/leads/bulk`
+  - Creates multiple leads at once (max 10 leads per request)
+  - **Request Body**:
+    ```json
+    {
+      "leads": [
+        {
+          "name": "Jane Smith",
+          "job_title": "CTO",
+          "company": "Tech Inc",
+          "email": "jane@techinc.com",
+          "industry": "Technology",
+          "headcount": 250
+        },
+        {
+          "name": "Bob Johnson",
+          "job_title": "VP Sales",
+          "company": "Sales Co",
+          "email": "bob@salesco.com",
+          "industry": "Marketing",
+          "phone_number": "+1-555-0456"
+        }
+      ]
+    }
+    ```
+  - **Response** (201 Created): Array of `LeadResponse` objects
+  - **Limits**: Minimum 1 lead, maximum 10 leads per request
+
+#### List Leads
+
+- **GET** `/api/v1/leads`
+  - Lists leads with cursor-based pagination and filtering
+  - **Query Parameters**:
+    - `cursor` (optional): Cursor for pagination (from `next_cursor` in previous response)
+    - `page_size` (optional, default: 20): Number of items per page (1-100)
+    - `industry` (optional): Filter by one or more industries (can be repeated: `?industry=Technology&industry=Healthcare`)
+    - `min_headcount` (optional): Minimum company headcount (≥ 1)
+    - `max_headcount` (optional): Maximum company headcount (≥ 1)
+  - **Example Request**: `GET /api/v1/leads?page_size=10&industry=Technology&min_headcount=100`
+  - **Response**:
+    ```json
+    {
+      "data": [
+        {
+          "id": "lead_123",
+          "name": "John Doe",
+          "job_title": "CEO",
+          "company": "Acme Corp",
+          "email": "john.doe@acme.com",
+          "industry": "Technology",
+          "phone_number": "+1-555-0123",
+          "headcount": 100,
+          "created_at": "2024-01-15T10:30:00Z",
+          "updated_at": "2024-01-15T10:30:00Z"
+        }
+      ],
+      "pagination": {
+        "total": 150,
+        "page_size": 10,
+        "next_cursor": "cursor_abc123",
+        "prev_cursor": null,
+        "has_next": true,
+        "has_prev": false
+      }
+    }
+    ```
+  - **Pagination**: Uses cursor-based pagination. Use `next_cursor` from the response to fetch the next page.
+
+#### Get Single Lead
+
+- **GET** `/api/v1/leads/{lead_id}`
+  - Retrieves detailed information about a specific lead
+  - **Path Parameters**:
+    - `lead_id`: The unique identifier of the lead
+  - **Example Request**: `GET /api/v1/leads/lead_123`
+  - **Response**:
+    ```json
+    {
+      "id": "lead_123",
+      "name": "John Doe",
+      "job_title": "CEO",
+      "company": "Acme Corp",
+      "email": "john.doe@acme.com",
+      "industry": "Technology",
+      "phone_number": "+1-555-0123",
+      "headcount": 100,
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
     }
     ```
 
@@ -137,6 +267,59 @@ MAX_PAGE_SIZE=100
 ```
 
 All settings have sensible defaults defined in `core/config.py`.
+
+## Seed Data
+
+The application automatically seeds initial data on startup if the database is empty. This helps with development and testing.
+
+### Automatic Seeding
+
+When the application starts, it checks if there are any leads in the database. If the database is empty, it automatically generates and inserts **100 sample leads**.
+
+### Seed Data Details
+
+The seed data generator creates realistic fake leads using the [Faker](https://faker.readthedocs.io/) library with the following characteristics:
+
+#### Industries
+The seed data includes leads from the following industries:
+- Technology
+- Healthcare
+- Finance
+- Manufacturing
+- Retail
+- Education
+- Real Estate
+- Consulting
+- Marketing
+- E-commerce
+
+#### Headcount Ranges
+Company headcount values are randomly selected from:
+- 10, 25, 50, 100, 250, 500, 1,000, 2,500, 5,000, 10,000
+- Approximately 20% of leads will have `null` headcount values
+
+#### Generated Fields
+Each seed lead includes:
+- **name**: Random full name
+- **job_title**: Random job title
+- **company**: Random company name
+- **email**: Company email address
+- **industry**: Randomly selected from the industries list above
+- **phone_number**: Random phone number (approximately 70% of leads will have a phone number)
+- **headcount**: Randomly selected from the headcount ranges (approximately 80% of leads will have a headcount)
+
+### Seed Data Behavior
+
+- **First Startup**: If the database is empty, 100 leads are automatically created
+- **Subsequent Starts**: If leads already exist, no seed data is generated
+- **Deterministic**: Uses a fixed seed (42) for reproducible results in development
+
+### Manual Seeding
+
+If you need to regenerate seed data, you can:
+1. Clear your database
+2. Restart the application
+3. The seed data will be automatically generated again
 
 ## Development
 
